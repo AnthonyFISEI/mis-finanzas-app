@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import axios from 'axios';
+import api from '../api';
 
 const emit = defineEmits(['loginExitoso']);
 
@@ -17,7 +17,7 @@ const iniciarSesion = async () => {
   errorMsj.value = '';
   
   try {
-    const res = await axios.post('http://localhost:3000/api/login', form.value);
+    const res = await api.post('/login', form.value);
     
     // Guardamos el token y los datos del usuario en el navegador
     localStorage.setItem('token', res.data.token);

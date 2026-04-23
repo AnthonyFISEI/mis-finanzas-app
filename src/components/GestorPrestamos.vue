@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import axios from 'axios';
+import api from '../api';
 
 const props = defineProps({ prestamos: Array });
 const emit = defineEmits(['recargarPrestamos']);
@@ -15,7 +15,7 @@ const form = ref({
 
 const guardarPrestamo = async () => {
   try {
-    await axios.post('http://localhost:3000/api/prestamos', form.value);
+    await api.post('/prestamos', form.value);
     emit('recargarPrestamos');
     // Limpiar campos
     form.value = { nombre: '', monto_total: '', cuotas_totales: '', valor_cuota: '', fecha_inicio: new Date().toISOString().split('T')[0] };

@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import axios from 'axios';
+import api from '../api';
 
 const props = defineProps({
   cuentas: { type: Array, required: true }
@@ -20,7 +20,7 @@ const guardarCuenta = async () => {
   if (!form.value.nombre || !form.value.tipo) return alert('El nombre y tipo son obligatorios');
   
   try {
-    await axios.post('http://localhost:3000/api/cuentas', form.value);
+    await api.post('/cuentas', form.value);
     emit('recargarCuentas'); // Avisamos a App.vue que descargue las cuentas actualizadas
     
     // Limpiamos formulario

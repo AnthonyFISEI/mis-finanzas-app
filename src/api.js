@@ -1,12 +1,8 @@
 import axios from 'axios';
 
 // Creamos una instancia configurada
-// const api = axios.create({
-//   baseURL: 'http://localhost:3000/api'
-// });
-
 const api = axios.create({
-  baseURL: 'https://mis-finanzas-api-dfdo.onrender.com/api'
+  baseURL: import.meta.env.VITE_API_BASE_URL
 });
 
 // Interceptor: Atrapa la petición ANTES de salir y le pega el Token
