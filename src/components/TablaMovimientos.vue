@@ -21,6 +21,20 @@ const transaccionesOrdenadas = computed(() => {
     }
   });
 });
+
+// Función para evitar el desfase de zona horaria al formatear YYYY-MM-DD
+const formatearFechaLocal = (fechaStr) => {
+  if (!fechaStr) return '';
+  const [year, month, day] = fechaStr.split('T')[0].split('-');
+  return new Date(year, month - 1, day).toLocaleDateString();
+};
+
+// Función segura para obtener el día exacto de la fecha original
+const obtenerDia = (fechaStr) => {
+  if (!fechaStr) return 0;
+  const [year, month, day] = fechaStr.split('T')[0].split('-');
+  return parseInt(day, 10);
+};
 </script>
 
 <template>
@@ -42,9 +56,9 @@ const transaccionesOrdenadas = computed(() => {
           
           <td class="py-3 text-sm text-gray-600">
             <div class="flex items-center gap-2">
-              {{ new Date(t.fecha_transaccion).toLocaleDateString() }}
+              {{ formatearFechaLocal(t.fecha_transaccion) }}
               <span 
-                v-if="t.cuenta_tipo === 'credito' && t.dia_corte && new Date(t.fecha_transaccion).getUTCDate() > t.dia_corte"
+                v-if="t.cuenta_tipo === 'credito' && t.dia_corte && obtenerDia(t.fecha_transaccion) > t.dia_corte"
                 class="cursor-help"
                 title="Este gasto se paga el próximo mes"
               >
