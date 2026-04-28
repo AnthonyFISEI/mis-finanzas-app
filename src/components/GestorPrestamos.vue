@@ -58,14 +58,18 @@ const guardarPrestamo = async () => {
         <div v-for="p in prestamos" :key="p.id" class="p-4 border border-gray-100 rounded-xl bg-gray-50 relative overflow-hidden">
           <div class="absolute top-0 right-0 p-2 bg-blue-100 text-blue-700 text-[10px] font-bold px-3">ACTIVO</div>
           <h3 class="font-bold text-gray-800">{{ p.nombre }}</h3>
-          <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
+          <div class="mt-4 grid grid-cols-3 gap-2 text-sm">
             <div>
               <span class="block text-[10px] text-gray-400 uppercase">Cuota Mensual</span>
               <span class="font-black text-gray-900">${{ p.valor_cuota }}</span>
             </div>
             <div>
               <span class="block text-[10px] text-gray-400 uppercase">Total meses</span>
-              <span class="font-bold text-gray-700">{{ p.cuotas_totales }} meses</span>
+              <span class="font-bold text-gray-700">{{ p.cuotas_totales }}</span>
+            </div>
+            <div>
+              <span class="block text-[10px] text-gray-400 uppercase">Restantes</span>
+              <span class="font-bold text-blue-600">{{ p.cuotas_totales - (p.cuotas_pagadas || 0) }}</span>
             </div>
           </div>
         </div>
