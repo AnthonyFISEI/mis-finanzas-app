@@ -184,7 +184,7 @@ onMounted(verificarAutenticacion);
           </header>
 
           <ResumenTarjetas :ingresos="totalIngresos" :gastos="totalGastos" :saldo="saldoNeto" />
-          <ProyeccionGastos :transacciones="transaccionesFiltradas" />
+          <ProyeccionGastos :transacciones="transacciones" :mesFiltro="mesFiltro" />
           <PanelTarjetas :cuentas="cuentas" :transacciones="transaccionesFiltradas" />
           <PanelGraficos :transacciones="transaccionesFiltradas" :ingresosTotales="totalIngresos" :gastosTotales="totalGastos" />
           

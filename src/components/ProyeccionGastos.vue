@@ -2,24 +2,47 @@
 import { computed } from 'vue';
 
 const props = defineProps({
-  transacciones: { type: Array, required: true }
+  transacciones: { type: Array, required: true },
+  mesFiltro: { type: String, required: false, default: '' }
 });
 
 const balances = computed(() => {
   let inmediato = 0;
   let proyectado = 0;
 
+  let filtro = props.mesFiltro;
+  if (!filtro) {
+    const hoy = new Date();
+    filtro = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  const [year, month] = filtro.split('-');
+  const fechaAnterior = new Date(year, month - 2, 1);
+  const mesAnteriorStr = `${fechaAnterior.getFullYear()}-${String(fechaAnterior.getMonth() + 1).padStart(2, '0')}`;
+
   props.transacciones.forEach(t => {
     if (t.tipo !== 'gasto') return;
     
     const monto = parseFloat(t.monto);
-    const diaCompra = new Date(t.fecha_transaccion).getUTCDate();
+    
+    if (!t.fecha_transaccion) return;
+    const [tYear, tMonth, tDay] = t.fecha_transaccion.split('T')[0].split('-');
+    const mesTransaccion = `${tYear}-${tMonth}`;
+    const diaCompra = parseInt(tDay, 10);
 
-    // Si es crédito y la compra fue después del corte, va al próximo mes
-    if (t.cuenta_tipo === 'credito' && t.dia_corte && diaCompra > t.dia_corte) {
-      proyectado += monto;
-    } else {
-      inmediato += monto;
+    const esCredito = t.cuenta_tipo === 'credito';
+    const esDespuesDelCorte = esCredito && t.dia_corte && diaCompra > t.dia_corte;
+
+    if (mesTransaccion === filtro) {
+      if (esDespuesDelCorte) {
+        proyectado += monto;
+      } else {
+        inmediato += monto;
+      }
+    } else if (mesTransaccion === mesAnteriorStr) {
+      if (esDespuesDelCorte) {
+        inmediato += monto;
+      }
     }
   });
 
