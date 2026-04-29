@@ -11,6 +11,8 @@ const props = defineProps({
   gastosTotales: { type: Number, required: true }
 });
 
+const emit = defineEmits(['filtrarCategoria']);
+
 // Opciones base
 const chartOptions = {
   responsive: true,
@@ -28,6 +30,13 @@ const horizontalBarOptions = {
       ticks: {
         autoSkip: false // IMPORTANTE: Evita que Chart.js oculte etiquetas (como Gasolina)
       }
+    }
+  },
+  onClick: (event, elements, chart) => {
+    if (elements.length > 0) {
+      const index = elements[0].index;
+      const categoria = chart.data.labels[index];
+      emit('filtrarCategoria', categoria);
     }
   }
 };

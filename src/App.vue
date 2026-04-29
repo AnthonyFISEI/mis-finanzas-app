@@ -29,6 +29,7 @@ const transacciones = ref([]);
 const mesFiltro = ref(new Date().toISOString().slice(0, 7));
 const cuentas = ref([]);
 const prestamos = ref([]); 
+const categoriaFiltroTabla = ref(null); 
 
 // --- FUNCIONES DE AUTENTICACIÓN ---
 const verificarAutenticacion = () => {
@@ -160,11 +161,26 @@ const transaccionesFiltradas = computed(() => {
       if (diaCompra > t.dia_corte) {
         return true;
       }
-    }
-
     return false;
   });
 });
+
+// Transacciones para la tabla (aplica filtro de categoría si existe)
+const transaccionesTablaFiltradas = computed(() => {
+  let trans = transaccionesFiltradas.value;
+  if (categoriaFiltroTabla.value) {
+    trans = trans.filter(t => t.categoria_nombre === categoriaFiltroTabla.value);
+  }
+  return trans;
+});
+
+const toggleFiltroCategoria = (categoria) => {
+  if (categoriaFiltroTabla.value === categoria) {
+    categoriaFiltroTabla.value = null; // Toggle off
+  } else {
+    categoriaFiltroTabla.value = categoria; // Toggle on
+  }
+};
 
 const totalIngresos = computed(() => transaccionesFiltradas.value.filter(t => t.tipo === 'ingreso').reduce((sum, t) => sum + parseFloat(t.monto), 0));
 const totalGastos = computed(() => transaccionesFiltradas.value.filter(t => t.tipo === 'gasto').reduce((sum, t) => sum + parseFloat(t.monto), 0));
@@ -232,7 +248,7 @@ onMounted(verificarAutenticacion);
           <ResumenTarjetas :ingresos="totalIngresos" :gastos="totalGastos" :saldo="saldoNeto" />
           <ProyeccionGastos :transacciones="transacciones" :mesFiltro="mesFiltro" />
           <PanelTarjetas :cuentas="cuentas" :transacciones="transaccionesFiltradas" />
-          <PanelGraficos :transacciones="transaccionesFiltradas" :ingresosTotales="totalIngresos" :gastosTotales="totalGastos" />
+          <PanelGraficos :transacciones="transaccionesFiltradas" :ingresosTotales="totalIngresos" :gastosTotales="totalGastos" @filtrarCategoria="toggleFiltroCategoria" />
           
           <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div class="lg:col-span-1">
@@ -244,7 +260,18 @@ onMounted(verificarAutenticacion);
               />
             </div>
             <div class="lg:col-span-3">
-              <TablaMovimientos :transacciones="transaccionesFiltradas" :mesFiltro="mesFiltro" @eliminar="eliminarTransaccion" />
+              <!-- Banner de filtro activo -->
+              <div v-if="categoriaFiltroTabla" class="mb-4 bg-indigo-50 p-4 rounded-xl border border-indigo-200 flex justify-between items-center shadow-sm">
+                <div>
+                  <span class="text-sm text-indigo-800 font-bold">Mostrando solo: </span>
+                  <span class="bg-indigo-600 text-white px-2 py-1 rounded text-sm font-bold shadow-sm">{{ categoriaFiltroTabla }}</span>
+                  <span class="ml-4 text-sm font-bold text-indigo-900">Subtotal Gastos: <strong class="text-lg">${{ transaccionesTablaFiltradas.filter(t => t.tipo === 'gasto').reduce((sum, t) => sum + parseFloat(t.monto), 0).toFixed(2) }}</strong></span>
+                </div>
+                <button @click="categoriaFiltroTabla = null" class="text-sm bg-white border border-indigo-300 px-3 py-1.5 rounded-lg hover:bg-indigo-100 text-indigo-700 font-bold transition shadow-sm">
+                  ✖ Limpiar Filtro
+                </button>
+              </div>
+              <TablaMovimientos :transacciones="transaccionesTablaFiltradas" :mesFiltro="mesFiltro" @eliminar="eliminarTransaccion" />
             </div>
           </div>
         </div>
