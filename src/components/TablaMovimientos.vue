@@ -2,7 +2,8 @@
 import { computed } from 'vue';
 
 const props = defineProps({
-  transacciones: { type: Array, required: true }
+  transacciones: { type: Array, required: true },
+  mesFiltro: { type: String, required: false, default: '' }
 });
 
 const emit = defineEmits(['eliminar']);
@@ -60,9 +61,10 @@ const obtenerDia = (fechaStr) => {
               <span 
                 v-if="t.cuenta_tipo === 'credito' && t.dia_corte && obtenerDia(t.fecha_transaccion) > t.dia_corte"
                 class="cursor-help"
-                title="Este gasto se paga el próximo mes"
+                :title="t.fecha_transaccion.startsWith(mesFiltro) ? 'Este gasto se paga el próximo mes' : 'Gasto arrastrado del mes anterior'"
               >
-                <span class="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold">⏭️ FUTURO</span>
+                <span v-if="t.fecha_transaccion.startsWith(mesFiltro) || !mesFiltro" class="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold">⏭️ FUTURO</span>
+                <span v-else class="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-bold">⚠️ MES ANTERIOR</span>
               </span>
             </div>
           </td>      

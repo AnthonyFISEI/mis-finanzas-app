@@ -139,7 +139,31 @@ const eliminarTransaccion = async (id) => {
 // --- LÓGICA DE FILTRADO Y CÁLCULOS (INDIVIDUAL) ---
 const transaccionesFiltradas = computed(() => {
   if (!mesFiltro.value) return transacciones.value;
-  return transacciones.value.filter(t => t.fecha_transaccion.startsWith(mesFiltro.value));
+
+  const [year, month] = mesFiltro.value.split('-');
+  const fechaAnterior = new Date(year, month - 2, 1);
+  const mesAnteriorStr = `${fechaAnterior.getFullYear()}-${String(fechaAnterior.getMonth() + 1).padStart(2, '0')}`;
+
+  return transacciones.value.filter(t => {
+    if (!t.fecha_transaccion) return false;
+
+    // Transacciones normales del mes seleccionado
+    if (t.fecha_transaccion.startsWith(mesFiltro.value)) {
+      // Opcional: Podríamos excluir las que son FUTURO de ESTE mes para que no sumen al gasto actual,
+      // pero las dejaremos para que el usuario sepa que las hizo.
+      return true;
+    }
+
+    // Transacciones del mes anterior que son FUTURO (deben cobrarse en el mes seleccionado)
+    if (t.fecha_transaccion.startsWith(mesAnteriorStr) && t.cuenta_tipo === 'credito' && t.dia_corte) {
+      const diaCompra = parseInt(t.fecha_transaccion.split('T')[0].split('-')[2], 10);
+      if (diaCompra > t.dia_corte) {
+        return true;
+      }
+    }
+
+    return false;
+  });
 });
 
 const totalIngresos = computed(() => transaccionesFiltradas.value.filter(t => t.tipo === 'ingreso').reduce((sum, t) => sum + parseFloat(t.monto), 0));
@@ -149,7 +173,29 @@ const saldoNeto = computed(() => totalIngresos.value - totalGastos.value);
 // --- CÁLCULOS CONJUNTOS ---
 const transaccionesConjuntasFiltradas = computed(() => {
   if (!mesFiltro.value) return transaccionesConjuntas.value;
-  return transaccionesConjuntas.value.filter(t => t.fecha_transaccion.startsWith(mesFiltro.value));
+
+  const [year, month] = mesFiltro.value.split('-');
+  const fechaAnterior = new Date(year, month - 2, 1);
+  const mesAnteriorStr = `${fechaAnterior.getFullYear()}-${String(fechaAnterior.getMonth() + 1).padStart(2, '0')}`;
+
+  return transaccionesConjuntas.value.filter(t => {
+    if (!t.fecha_transaccion) return false;
+
+    // Transacciones normales del mes seleccionado
+    if (t.fecha_transaccion.startsWith(mesFiltro.value)) {
+      return true;
+    }
+
+    // Transacciones del mes anterior que son FUTURO (deben cobrarse en el mes seleccionado)
+    if (t.fecha_transaccion.startsWith(mesAnteriorStr) && t.cuenta_tipo === 'credito' && t.dia_corte) {
+      const diaCompra = parseInt(t.fecha_transaccion.split('T')[0].split('-')[2], 10);
+      if (diaCompra > t.dia_corte) {
+        return true;
+      }
+    }
+
+    return false;
+  });
 });
 
 const totalIngresosConjuntos = computed(() => transaccionesConjuntasFiltradas.value.filter(t => t.tipo === 'ingreso').reduce((sum, t) => sum + parseFloat(t.monto), 0));
@@ -198,7 +244,7 @@ onMounted(verificarAutenticacion);
               />
             </div>
             <div class="lg:col-span-3">
-              <TablaMovimientos :transacciones="transaccionesFiltradas" @eliminar="eliminarTransaccion" />
+              <TablaMovimientos :transacciones="transaccionesFiltradas" :mesFiltro="mesFiltro" @eliminar="eliminarTransaccion" />
             </div>
           </div>
         </div>
@@ -272,6 +318,7 @@ onMounted(verificarAutenticacion);
             <h3 class="text-lg font-bold mb-4">Movimientos Compartidos</h3>
             <TablaMovimientos 
               :transacciones="transaccionesConjuntasFiltradas" 
+              :mesFiltro="mesFiltro"
               @eliminar="eliminarTransaccion" 
             />
           </div>
