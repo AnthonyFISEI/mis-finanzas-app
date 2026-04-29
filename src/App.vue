@@ -161,6 +161,7 @@ const transaccionesFiltradas = computed(() => {
       if (diaCompra > t.dia_corte) {
         return true;
       }
+    }
     return false;
   });
 });
