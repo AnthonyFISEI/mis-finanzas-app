@@ -22,7 +22,14 @@ const chartOptions = {
 const horizontalBarOptions = {
   ...chartOptions,
   indexAxis: 'y', // Convierte las barras verticales en horizontales
-  plugins: { legend: { display: false } } // Ocultamos leyenda por limpieza
+  plugins: { legend: { display: false } }, // Ocultamos leyenda por limpieza
+  scales: {
+    y: {
+      ticks: {
+        autoSkip: false // IMPORTANTE: Evita que Chart.js oculte etiquetas (como Gasolina)
+      }
+    }
+  }
 };
 
 // 1. Gráfico Existente: Fijos vs Variables
