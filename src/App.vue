@@ -138,6 +138,15 @@ const eliminarTransaccion = async (id) => {
 };
 
 // --- LÓGICA DE FILTRADO Y CÁLCULOS (INDIVIDUAL) ---
+const esGastoFuturo = (t, mesStr) => {
+  if (t.tipo !== 'gasto' || t.cuenta_tipo !== 'credito' || !t.dia_corte) return false;
+  if (t.fecha_transaccion && t.fecha_transaccion.startsWith(mesStr)) {
+    const diaCompra = parseInt(t.fecha_transaccion.split('T')[0].split('-')[2], 10);
+    return diaCompra > t.dia_corte;
+  }
+  return false;
+};
+
 const transaccionesFiltradas = computed(() => {
   if (!mesFiltro.value) return transacciones.value;
 
@@ -184,7 +193,8 @@ const toggleFiltroCategoria = (categoria) => {
 };
 
 const totalIngresos = computed(() => transaccionesFiltradas.value.filter(t => t.tipo === 'ingreso').reduce((sum, t) => sum + parseFloat(t.monto), 0));
-const totalGastos = computed(() => transaccionesFiltradas.value.filter(t => t.tipo === 'gasto').reduce((sum, t) => sum + parseFloat(t.monto), 0));
+const totalGastos = computed(() => transaccionesFiltradas.value.filter(t => t.tipo === 'gasto' && !esGastoFuturo(t, mesFiltro.value)).reduce((sum, t) => sum + parseFloat(t.monto), 0));
+const totalGastosFuturos = computed(() => transaccionesFiltradas.value.filter(t => t.tipo === 'gasto' && esGastoFuturo(t, mesFiltro.value)).reduce((sum, t) => sum + parseFloat(t.monto), 0));
 const saldoNeto = computed(() => totalIngresos.value - totalGastos.value);
 
 // --- CÁLCULOS CONJUNTOS ---
@@ -216,7 +226,8 @@ const transaccionesConjuntasFiltradas = computed(() => {
 });
 
 const totalIngresosConjuntos = computed(() => transaccionesConjuntasFiltradas.value.filter(t => t.tipo === 'ingreso').reduce((sum, t) => sum + parseFloat(t.monto), 0));
-const totalGastosConjuntos = computed(() => transaccionesConjuntasFiltradas.value.filter(t => t.tipo === 'gasto').reduce((sum, t) => sum + parseFloat(t.monto), 0));
+const totalGastosConjuntos = computed(() => transaccionesConjuntasFiltradas.value.filter(t => t.tipo === 'gasto' && !esGastoFuturo(t, mesFiltro.value)).reduce((sum, t) => sum + parseFloat(t.monto), 0));
+const totalGastosFuturosConjuntos = computed(() => transaccionesConjuntasFiltradas.value.filter(t => t.tipo === 'gasto' && esGastoFuturo(t, mesFiltro.value)).reduce((sum, t) => sum + parseFloat(t.monto), 0));
 const saldoNetoConjunto = computed(() => totalIngresosConjuntos.value - totalGastosConjuntos.value);
 
 // Iniciamos verificando si el usuario ya tiene una sesión guardada
@@ -246,7 +257,7 @@ onMounted(verificarAutenticacion);
             </div>
           </header>
 
-          <ResumenTarjetas :ingresos="totalIngresos" :gastos="totalGastos" :saldo="saldoNeto" />
+          <ResumenTarjetas :ingresos="totalIngresos" :gastos="totalGastos" :gastosFuturos="totalGastosFuturos" :saldo="saldoNeto" />
           <ProyeccionGastos :transacciones="transacciones" :mesFiltro="mesFiltro" />
           <PanelTarjetas :cuentas="cuentas" :transacciones="transaccionesFiltradas" />
           <PanelGraficos :transacciones="transaccionesFiltradas" :ingresosTotales="totalIngresos" :gastosTotales="totalGastos" @filtrarCategoria="toggleFiltroCategoria" />
@@ -318,7 +329,7 @@ onMounted(verificarAutenticacion);
             </div>
           </header>
 
-          <ResumenTarjetas :ingresos="totalIngresosConjuntos" :gastos="totalGastosConjuntos" :saldo="saldoNetoConjunto" />
+          <ResumenTarjetas :ingresos="totalIngresosConjuntos" :gastos="totalGastosConjuntos" :gastosFuturos="totalGastosFuturosConjuntos" :saldo="saldoNetoConjunto" />
           
 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
               <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Desglose de Aportes (Ingresos)</h3>
