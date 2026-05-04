@@ -11,13 +11,35 @@ const props = defineProps({
   gastosTotales: { type: Number, required: true }
 });
 
-const emit = defineEmits(['filtrarCategoria']);
+const emit = defineEmits(['filtrarCategoria', 'filtrarCuenta', 'filtrarRigidez']);
 
 // Opciones base
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: { legend: { position: 'bottom' } }
+};
+
+const rigidezChartOptions = {
+  ...chartOptions,
+  onClick: (event, elements, chart) => {
+    if (elements.length > 0) {
+      const index = elements[0].index;
+      const label = chart.data.labels[index];
+      emit('filtrarRigidez', label);
+    }
+  }
+};
+
+const metodoPagoChartOptions = {
+  ...chartOptions,
+  onClick: (event, elements, chart) => {
+    if (elements.length > 0) {
+      const index = elements[0].index;
+      const label = chart.data.labels[index];
+      emit('filtrarCuenta', label);
+    }
+  }
 };
 
 // Opciones específicas para barras horizontales
@@ -158,7 +180,7 @@ const datosMetodoPago = computed(() => {
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
       <h2 class="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider text-center">Rigidez (Fijos vs Var)</h2>
       <div class="h-64 relative">
-        <Doughnut v-if="gastosTotales > 0" :data="datosFijosVariables" :options="chartOptions" />
+        <Doughnut v-if="gastosTotales > 0" :data="datosFijosVariables" :options="rigidezChartOptions" />
         <div v-else class="flex h-full items-center justify-center text-sm text-gray-400">Sin datos</div>
       </div>
     </div>
@@ -166,7 +188,7 @@ const datosMetodoPago = computed(() => {
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
       <h2 class="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider text-center">Uso de Cuentas / Deuda</h2>
       <div class="h-64 relative">
-        <Doughnut v-if="gastosTotales > 0" :data="datosMetodoPago" :options="chartOptions" />
+        <Doughnut v-if="gastosTotales > 0" :data="datosMetodoPago" :options="metodoPagoChartOptions" />
         <div v-else class="flex h-full items-center justify-center text-sm text-gray-400">Sin datos</div>
       </div>
     </div>

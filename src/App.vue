@@ -30,6 +30,8 @@ const mesFiltro = ref(new Date().toISOString().slice(0, 7));
 const cuentas = ref([]);
 const prestamos = ref([]); 
 const categoriaFiltroTabla = ref(null); 
+const cuentaFiltroTabla = ref(null);
+const rigidezFiltroTabla = ref(null);
 
 // --- FUNCIONES DE AUTENTICACIÓN ---
 const verificarAutenticacion = () => {
@@ -175,20 +177,54 @@ const transaccionesFiltradas = computed(() => {
   });
 });
 
-// Transacciones para la tabla (aplica filtro de categoría si existe)
+// Transacciones para la tabla (aplica filtro de categoría, cuenta o rigidez si existe)
 const transaccionesTablaFiltradas = computed(() => {
   let trans = transaccionesFiltradas.value;
   if (categoriaFiltroTabla.value) {
     trans = trans.filter(t => t.categoria_nombre === categoriaFiltroTabla.value);
+  } else if (cuentaFiltroTabla.value) {
+    trans = trans.filter(t => {
+      const nombreCuenta = t.cuenta_nombre || 'Efectivo/Otros';
+      return nombreCuenta === cuentaFiltroTabla.value;
+    });
+  } else if (rigidezFiltroTabla.value) {
+    trans = trans.filter(t => {
+      if (t.tipo !== 'gasto') return false;
+      const isFijo = t.es_fijo === 1 || t.es_fijo === true || t.es_fijo === '1';
+      if (rigidezFiltroTabla.value === 'Fijos') return isFijo;
+      return !isFijo;
+    });
   }
   return trans;
 });
 
 const toggleFiltroCategoria = (categoria) => {
+  cuentaFiltroTabla.value = null;
+  rigidezFiltroTabla.value = null;
   if (categoriaFiltroTabla.value === categoria) {
     categoriaFiltroTabla.value = null; // Toggle off
   } else {
     categoriaFiltroTabla.value = categoria; // Toggle on
+  }
+};
+
+const toggleFiltroCuenta = (cuenta) => {
+  categoriaFiltroTabla.value = null;
+  rigidezFiltroTabla.value = null;
+  if (cuentaFiltroTabla.value === cuenta) {
+    cuentaFiltroTabla.value = null;
+  } else {
+    cuentaFiltroTabla.value = cuenta;
+  }
+};
+
+const toggleFiltroRigidez = (rigidez) => {
+  categoriaFiltroTabla.value = null;
+  cuentaFiltroTabla.value = null;
+  if (rigidezFiltroTabla.value === rigidez) {
+    rigidezFiltroTabla.value = null;
+  } else {
+    rigidezFiltroTabla.value = rigidez;
   }
 };
 
@@ -260,7 +296,14 @@ onMounted(verificarAutenticacion);
           <ResumenTarjetas :ingresos="totalIngresos" :saldo="saldoNeto" />
           <ProyeccionGastos :transacciones="transacciones" :mesFiltro="mesFiltro" />
           <PanelTarjetas :cuentas="cuentas" :transacciones="transaccionesFiltradas" />
-          <PanelGraficos :transacciones="transaccionesFiltradas" :ingresosTotales="totalIngresos" :gastosTotales="totalGastos" @filtrarCategoria="toggleFiltroCategoria" />
+          <PanelGraficos 
+            :transacciones="transaccionesFiltradas" 
+            :ingresosTotales="totalIngresos" 
+            :gastosTotales="totalGastos" 
+            @filtrarCategoria="toggleFiltroCategoria" 
+            @filtrarCuenta="toggleFiltroCuenta"
+            @filtrarRigidez="toggleFiltroRigidez"
+          />
           
           <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div class="lg:col-span-1">
@@ -273,13 +316,13 @@ onMounted(verificarAutenticacion);
             </div>
             <div class="lg:col-span-3">
               <!-- Banner de filtro activo -->
-              <div v-if="categoriaFiltroTabla" class="mb-4 bg-indigo-50 p-4 rounded-xl border border-indigo-200 flex justify-between items-center shadow-sm">
+              <div v-if="categoriaFiltroTabla || cuentaFiltroTabla || rigidezFiltroTabla" class="mb-4 bg-indigo-50 p-4 rounded-xl border border-indigo-200 flex justify-between items-center shadow-sm">
                 <div>
                   <span class="text-sm text-indigo-800 font-bold">Mostrando solo: </span>
-                  <span class="bg-indigo-600 text-white px-2 py-1 rounded text-sm font-bold shadow-sm">{{ categoriaFiltroTabla }}</span>
+                  <span class="bg-indigo-600 text-white px-2 py-1 rounded text-sm font-bold shadow-sm">{{ categoriaFiltroTabla || cuentaFiltroTabla || rigidezFiltroTabla }}</span>
                   <span class="ml-4 text-sm font-bold text-indigo-900">Subtotal Gastos: <strong class="text-lg">${{ transaccionesTablaFiltradas.filter(t => t.tipo === 'gasto').reduce((sum, t) => sum + parseFloat(t.monto), 0).toFixed(2) }}</strong></span>
                 </div>
-                <button @click="categoriaFiltroTabla = null" class="text-sm bg-white border border-indigo-300 px-3 py-1.5 rounded-lg hover:bg-indigo-100 text-indigo-700 font-bold transition shadow-sm">
+                <button @click="categoriaFiltroTabla = null; cuentaFiltroTabla = null; rigidezFiltroTabla = null" class="text-sm bg-white border border-indigo-300 px-3 py-1.5 rounded-lg hover:bg-indigo-100 text-indigo-700 font-bold transition shadow-sm">
                   ✖ Limpiar Filtro
                 </button>
               </div>
