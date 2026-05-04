@@ -257,7 +257,7 @@ onMounted(verificarAutenticacion);
             </div>
           </header>
 
-          <ResumenTarjetas :ingresos="totalIngresos" :gastos="totalGastos" :gastosFuturos="totalGastosFuturos" :saldo="saldoNeto" />
+          <ResumenTarjetas :ingresos="totalIngresos" :saldo="saldoNeto" />
           <ProyeccionGastos :transacciones="transacciones" :mesFiltro="mesFiltro" />
           <PanelTarjetas :cuentas="cuentas" :transacciones="transaccionesFiltradas" />
           <PanelGraficos :transacciones="transaccionesFiltradas" :ingresosTotales="totalIngresos" :gastosTotales="totalGastos" @filtrarCategoria="toggleFiltroCategoria" />
@@ -329,7 +329,7 @@ onMounted(verificarAutenticacion);
             </div>
           </header>
 
-          <ResumenTarjetas :ingresos="totalIngresosConjuntos" :gastos="totalGastosConjuntos" :gastosFuturos="totalGastosFuturosConjuntos" :saldo="saldoNetoConjunto" />
+          <ResumenTarjetas :ingresos="totalIngresosConjuntos" :saldo="saldoNetoConjunto" />
           
 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
               <h3 class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Desglose de Aportes (Ingresos)</h3>
