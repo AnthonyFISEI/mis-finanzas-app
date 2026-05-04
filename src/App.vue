@@ -320,7 +320,8 @@ onMounted(verificarAutenticacion);
                 <div>
                   <span class="text-sm text-indigo-800 font-bold">Mostrando solo: </span>
                   <span class="bg-indigo-600 text-white px-2 py-1 rounded text-sm font-bold shadow-sm">{{ categoriaFiltroTabla || cuentaFiltroTabla || rigidezFiltroTabla }}</span>
-                  <span class="ml-4 text-sm font-bold text-indigo-900">Subtotal Gastos: <strong class="text-lg">${{ transaccionesTablaFiltradas.filter(t => t.tipo === 'gasto').reduce((sum, t) => sum + parseFloat(t.monto), 0).toFixed(2) }}</strong></span>
+                  <span class="ml-4 text-sm font-bold text-indigo-900">Subtotal Ingresos: <strong class="text-lg text-green-600">${{ transaccionesTablaFiltradas.filter(t => t.tipo === 'ingreso').reduce((sum, t) => sum + parseFloat(t.monto), 0).toFixed(2) }}</strong></span>
+                  <span class="ml-4 text-sm font-bold text-indigo-900">Subtotal Gastos: <strong class="text-lg text-red-600">${{ transaccionesTablaFiltradas.filter(t => t.tipo === 'gasto').reduce((sum, t) => sum + parseFloat(t.monto), 0).toFixed(2) }}</strong></span>
                 </div>
                 <button @click="categoriaFiltroTabla = null; cuentaFiltroTabla = null; rigidezFiltroTabla = null" class="text-sm bg-white border border-indigo-300 px-3 py-1.5 rounded-lg hover:bg-indigo-100 text-indigo-700 font-bold transition shadow-sm">
                   ✖ Limpiar Filtro
