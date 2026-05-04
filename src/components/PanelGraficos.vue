@@ -11,7 +11,7 @@ const props = defineProps({
   gastosTotales: { type: Number, required: true }
 });
 
-const emit = defineEmits(['filtrarCategoria', 'filtrarCuenta', 'filtrarRigidez']);
+const emit = defineEmits(['filtrarCategoria', 'filtrarCuenta', 'filtrarRigidez', 'filtrarDia']);
 
 // Opciones base
 const chartOptions = {
@@ -38,6 +38,18 @@ const metodoPagoChartOptions = {
       const index = elements[0].index;
       const label = chart.data.labels[index];
       emit('filtrarCuenta', label);
+    }
+  }
+};
+
+const barChartOptionsDia = {
+  ...chartOptions,
+  onClick: (event, elements, chart) => {
+    if (elements.length > 0) {
+      const index = elements[0].index;
+      const label = chart.data.labels[index]; // ej: 'Día 5'
+      const dia = label.replace('Día ', '');
+      emit('filtrarDia', dia);
     }
   }
 };
@@ -196,7 +208,7 @@ const datosMetodoPago = computed(() => {
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
       <h2 class="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider text-center">Evolución del Gasto Diario</h2>
       <div class="h-64 relative">
-        <Bar v-if="gastosTotales > 0" :data="datosGastosPorDia" :options="chartOptions" />
+        <Bar v-if="gastosTotales > 0" :data="datosGastosPorDia" :options="barChartOptionsDia" />
         <div v-else class="flex h-full items-center justify-center text-sm text-gray-400">Sin datos</div>
       </div>
     </div>

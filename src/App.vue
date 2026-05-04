@@ -32,6 +32,7 @@ const prestamos = ref([]);
 const categoriaFiltroTabla = ref(null); 
 const cuentaFiltroTabla = ref(null);
 const rigidezFiltroTabla = ref(null);
+const diaFiltroTabla = ref(null);
 
 // --- FUNCIONES DE AUTENTICACIÓN ---
 const verificarAutenticacion = () => {
@@ -194,6 +195,12 @@ const transaccionesTablaFiltradas = computed(() => {
       if (rigidezFiltroTabla.value === 'Fijos') return isFijo;
       return !isFijo;
     });
+  } else if (diaFiltroTabla.value) {
+    trans = trans.filter(t => {
+      if (!t.fecha_transaccion) return false;
+      const tDia = parseInt(t.fecha_transaccion.split('T')[0].split('-')[2], 10).toString();
+      return tDia === diaFiltroTabla.value;
+    });
   }
   return trans;
 });
@@ -201,6 +208,7 @@ const transaccionesTablaFiltradas = computed(() => {
 const toggleFiltroCategoria = (categoria) => {
   cuentaFiltroTabla.value = null;
   rigidezFiltroTabla.value = null;
+  diaFiltroTabla.value = null;
   if (categoriaFiltroTabla.value === categoria) {
     categoriaFiltroTabla.value = null; // Toggle off
   } else {
@@ -211,6 +219,7 @@ const toggleFiltroCategoria = (categoria) => {
 const toggleFiltroCuenta = (cuenta) => {
   categoriaFiltroTabla.value = null;
   rigidezFiltroTabla.value = null;
+  diaFiltroTabla.value = null;
   if (cuentaFiltroTabla.value === cuenta) {
     cuentaFiltroTabla.value = null;
   } else {
@@ -221,10 +230,22 @@ const toggleFiltroCuenta = (cuenta) => {
 const toggleFiltroRigidez = (rigidez) => {
   categoriaFiltroTabla.value = null;
   cuentaFiltroTabla.value = null;
+  diaFiltroTabla.value = null;
   if (rigidezFiltroTabla.value === rigidez) {
     rigidezFiltroTabla.value = null;
   } else {
     rigidezFiltroTabla.value = rigidez;
+  }
+};
+
+const toggleFiltroDia = (dia) => {
+  categoriaFiltroTabla.value = null;
+  cuentaFiltroTabla.value = null;
+  rigidezFiltroTabla.value = null;
+  if (diaFiltroTabla.value === dia) {
+    diaFiltroTabla.value = null;
+  } else {
+    diaFiltroTabla.value = dia;
   }
 };
 
@@ -303,6 +324,7 @@ onMounted(verificarAutenticacion);
             @filtrarCategoria="toggleFiltroCategoria" 
             @filtrarCuenta="toggleFiltroCuenta"
             @filtrarRigidez="toggleFiltroRigidez"
+            @filtrarDia="toggleFiltroDia"
           />
           
           <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -316,14 +338,14 @@ onMounted(verificarAutenticacion);
             </div>
             <div class="lg:col-span-3">
               <!-- Banner de filtro activo -->
-              <div v-if="categoriaFiltroTabla || cuentaFiltroTabla || rigidezFiltroTabla" class="mb-4 bg-indigo-50 p-4 rounded-xl border border-indigo-200 flex justify-between items-center shadow-sm">
+              <div v-if="categoriaFiltroTabla || cuentaFiltroTabla || rigidezFiltroTabla || diaFiltroTabla" class="mb-4 bg-indigo-50 p-4 rounded-xl border border-indigo-200 flex justify-between items-center shadow-sm">
                 <div>
                   <span class="text-sm text-indigo-800 font-bold">Mostrando solo: </span>
-                  <span class="bg-indigo-600 text-white px-2 py-1 rounded text-sm font-bold shadow-sm">{{ categoriaFiltroTabla || cuentaFiltroTabla || rigidezFiltroTabla }}</span>
+                  <span class="bg-indigo-600 text-white px-2 py-1 rounded text-sm font-bold shadow-sm">{{ diaFiltroTabla ? 'Día ' + diaFiltroTabla : (categoriaFiltroTabla || cuentaFiltroTabla || rigidezFiltroTabla) }}</span>
                   <span class="ml-4 text-sm font-bold text-indigo-900">Subtotal Ingresos: <strong class="text-lg text-green-600">${{ transaccionesTablaFiltradas.filter(t => t.tipo === 'ingreso').reduce((sum, t) => sum + parseFloat(t.monto), 0).toFixed(2) }}</strong></span>
                   <span class="ml-4 text-sm font-bold text-indigo-900">Subtotal Gastos: <strong class="text-lg text-red-600">${{ transaccionesTablaFiltradas.filter(t => t.tipo === 'gasto').reduce((sum, t) => sum + parseFloat(t.monto), 0).toFixed(2) }}</strong></span>
                 </div>
-                <button @click="categoriaFiltroTabla = null; cuentaFiltroTabla = null; rigidezFiltroTabla = null" class="text-sm bg-white border border-indigo-300 px-3 py-1.5 rounded-lg hover:bg-indigo-100 text-indigo-700 font-bold transition shadow-sm">
+                <button @click="categoriaFiltroTabla = null; cuentaFiltroTabla = null; rigidezFiltroTabla = null; diaFiltroTabla = null" class="text-sm bg-white border border-indigo-300 px-3 py-1.5 rounded-lg hover:bg-indigo-100 text-indigo-700 font-bold transition shadow-sm">
                   ✖ Limpiar Filtro
                 </button>
               </div>
